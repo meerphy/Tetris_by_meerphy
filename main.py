@@ -33,27 +33,23 @@ myappid = u'mycompany.myproduct.subproduct.version'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
-class Language_error(Exception):
+class LanguageError(Exception):
     pass
 
 
-class Syntax_error(Exception):
+class RepetitionError(Exception):
     pass
 
 
-class Repetition_error(Exception):
+class LenError(Exception):
     pass
 
 
-class Len_error(Exception):
+class PasswordError(Exception):
     pass
 
 
-class Password_error(Exception):
-    pass
-
-
-class Up_error(Exception):
+class UpError(Exception):
     pass
 
 
@@ -118,7 +114,8 @@ class Enter(QMainWindow, Ui_Enter):
         else:
             self.errors_label.setText('Введите и логин, и пароль')
 
-    def set_scene(self):
+    @staticmethod
+    def set_scene():
         log.setCurrentIndex(1)
 
 
@@ -187,12 +184,12 @@ class Regiter(QMainWindow, Ui_Register):
     def check_login(self):
         try:
             if len(self.login.text()) < 3:
-                raise Len_error
+                raise LenError
             letters = 'qwertyuiopasdfghjklzxcvbnm1234567890'
             letters_up = 'QWERTYUIOPASDFGHJKLZXCVBNM'
             for letter in self.login.text():
                 if letter not in letters and letter not in letters_up:
-                    raise Language_error
+                    raise LanguageError
             con = sqlite3.connect('data_bas/data_base.db')
             cur = con.cursor()
             nickname = cur.execute("""SELECT Login FROM Log_in"
@@ -201,13 +198,13 @@ class Regiter(QMainWindow, Ui_Register):
                 password = cur.execute("""SELECT Password FROM Log_in"
                                        "WHERE Login = ?""", (self.login.text(), )).fetchall()
                 if password[0][0] != self.password.text():
-                    raise Repetition_error
+                    raise RepetitionError
             return True
-        except Len_error:
+        except LenError:
             self.errors_label.setText('Длина никнейма должна быть\nне менее 3 символов')
-        except Language_error:
+        except LanguageError:
             self.errors_label.setText('Никнейм может содержать только\nбуквы латинского алфавита и цифры!')
-        except Repetition_error:
+        except RepetitionError:
             self.errors_label.setText('Никнейм уже занят!')
         return False
 
@@ -217,20 +214,20 @@ class Regiter(QMainWindow, Ui_Register):
             letters_up = 'QWERTYUIOPASDFGHJKLZXCVBNM'
             for letter in self.password.text():
                 if letter not in letters and letter not in letters_up:
-                    raise Language_error
+                    raise LanguageError
             if len(self.password.text()) < 8:
-                raise Len_error
+                raise LenError
             for letter in self.password.text():
                 if letter.isupper():
                     break
             else:
-                raise Up_error
+                raise UpError
             return True
-        except Language_error:
+        except LanguageError:
             self.errors_label.setText('Пароль может содержать только\nбуквы латинского алфавита и цифры!')
-        except Len_error:
+        except LenError:
             self.errors_label.setText('Длина пароля должна быть\nне менее 8 символов')
-        except Up_error:
+        except UpError:
             self.errors_label.setText('Пароль должен содержать\nбуквы разного регистра')
         return False
 
@@ -262,7 +259,8 @@ class Menu(QMainWindow, Ui_Menu):
             delta = event.pos() - self.old_pos
             widget.move(widget.pos() + delta)
 
-    def set_scene(self, button):
+    @staticmethod
+    def set_scene(button):
         if button.text() == 'Играть':
             play.nickname.setText(nick)
             play.score.setText('0')
@@ -310,7 +308,8 @@ class Leaders(QMainWindow, Ui_Leaders):
         if event.key() == Qt.Key_Escape:
             widget.setCurrentIndex(0)
 
-    def set_scene(self):
+    @staticmethod
+    def set_scene():
         widget.setCurrentIndex(0)
 
     def set_sort(self):
@@ -508,7 +507,8 @@ class Play(QMainWindow, Ui_Play):
                                 i[1] + self.main_coords[1] - 2].setStyleSheet(f'background-color: {self.next[-1]}')
         self.check_game_over()
 
-    def choice_plate(self):
+    @staticmethod
+    def choice_plate():
         plates = [[[0, 0], [0, 1], [1, 0], [1, 1], '#ff0000'], [[0, -1], [0, 0], [0, 1], [0, 2], '#42aaff'],
                   [[0, -1], [0, 0], [0, 1], [1, 1], '#0000ff'], [[0, -1], [0, 0], [0, 1], [1, 0], '#ffff00'],
                   [[0, 0], [0, 1], [1, -1], [1, 0], '#8b00ff'], [[0, -1], [0, 0], [1, 0], [1, 1], '#ffa500'],
@@ -600,8 +600,8 @@ class Play(QMainWindow, Ui_Play):
                 return False
             else:
                 self.draw_default_plate()
-                if self.label[i[0] + self.main_coords[0] + 1, i[1] +
-                            self.main_coords[1]].styleSheet() != "background-color: rgb(45, 45, 45)":
+                if self.label[i[0] + self.main_coords[0] + 1,
+                              i[1] + self.main_coords[1]].styleSheet() != "background-color: rgb(45, 45, 45)":
                     self.draw_plate()
                     return False
                 else:
@@ -721,7 +721,8 @@ class Settings(QMainWindow, Ui_Settings):
         con.commit()
         con.close()
 
-    def reset(self):
+    @staticmethod
+    def reset():
         con = sqlite3.connect('data_bas/data_base.db')
         cur = con.cursor()
         cur.execute("""UPDATE Data
@@ -731,7 +732,8 @@ class Settings(QMainWindow, Ui_Settings):
         con.close()
         play.best_score.setText('0')
 
-    def delete(self):
+    @staticmethod
+    def delete():
         con = sqlite3.connect('data_bas/data_base.db')
         cur = con.cursor()
         cur.execute("""DELETE from Data
@@ -747,7 +749,8 @@ class Settings(QMainWindow, Ui_Settings):
         entering.login.clear()
         entering.password.clear()
 
-    def back(self):
+    @staticmethod
+    def back():
         widget.setCurrentIndex(0)
 
 
